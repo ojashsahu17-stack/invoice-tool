@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hari Kripa Traders - Invoice</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+
+        .toolbar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .toolbar button {
+            padding: 10px 20px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .toolbar button:hover {
+            background-color: #34495e;
+            transform: translateY(-2px);
+        }
+
+        .toolbar .print-btn {
+            background-color: #27ae60;
+        }
+
+        .toolbar .print-btn:hover {
+            background-color: #229954;
+        }
+
+        .toolbar .pdf-btn {
+            background-color: #e74c3c;
+        }
+
+        .toolbar .pdf-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Invoice Styles */
+        .invoice {
+            border: 2px solid #333;
+            padding: 15px;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #1a1a4d;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .header .subheader {
+            color: #8b4513;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .header .business-type {
+            font-size: 11px;
+            color: #8b4513;
+            margin: 5px 0;
+        }
+
+        .contact-info {
+            text-align: center;
+            font-size: 11px;
+            margin: 5px 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            margin-bottom: 10px;
+            border: 1px solid #333;
+        }
+
+        .info-box {
+            padding: 8px;
+            border-right: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+
+        .info-box:nth-child(2n) {
+            border-right: none;
+        }
+
+        .info-box:nth-child(n+3):nth-last-child(-n+2) {
+            border-bottom: none;
+        }
+
+        .info-box label {
+            font-weight: bold;
+            font-size: 11px;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .info-box input {
+            width: 100%;
+            padding: 4px;
+            border: 1px solid #ccc;
+            font-size: 11px;
+            font-family: Arial;
+        }
+
+        .section-header {
+            background-color: #a0522d;
+            color: white;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 10px;
+            margin-bottom: 0;
+            text-align: center;
+        }
+
+        .receiver-section {
+            border: 1px solid #333;
+            border-top: none;
+            padding: 0;
+        }
+
+        .receiver-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .receiver-row:last-child {
+            border-bottom: none;
+        }
+
+        .receiver-field {
+            padding: 8px;
+            border-right: 1px solid #333;
+        }
+
+        .receiver-field:nth-child(2n) {
+            border-right: none;
+        }
+
+        .receiver-field label {
+            font-weight: bold;
+            font-size: 11px;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .receiver-field input {
+            width: 100%;
+            padding: 4px;
+            border: 1px solid #ccc;
+            font-size: 11px;
+            font-family: Arial;
+        }
+
+        .receiver-field.full {
+            grid-column: 1 / -1;
+            border-right: none;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #333;
+        }
+
+        td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: center;
+            font-size: 11px;
+            height: 35px;
+        }
+
+        td input {
+            width: 100%;
+            padding: 4px;
+            border: none;
+            text-align: center;
+            font-size: 11px;
+            font-family: Arial;
+            height: 100%;
+        }
+
+        td input[type="number"] {
+            text-align: right;
+        }
+
+        .amount-input {
+            text-align: right;
+            background-color: #f9f9f9;
+            font-weight: bold;
+            padding: 8px 12px;
+        }
+
+        .delete-cell {
+            padding: 4px;
+        }
+
+        .total-row {
+            background-color: #e8e8e8;
+            font-weight: bold;
+        }
+
+        .total-row td {
+            text-align: right;
+            padding: 10px;
+        }
+
+        .add-row-btn {
+            padding: 8px 15px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 10px 0;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .add-row-btn:hover {
+            background-color: #229954;
+        }
+
+        .in-words-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 0;
+            border: 1px solid #333;
+            margin: 10px 0;
+        }
+
+        .in-words-field {
+            padding: 10px;
+            border-right: 1px solid #333;
+        }
+
+        .in-words-field label {
+            font-weight: bold;
+            font-size: 11px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .in-words-field input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ccc;
+            font-size: 11px;
+            font-family: Arial;
+        }
+
+        .total-field {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-right: none;
+        }
+
+        .total-field label {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .total-field .total-amount {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .additional-section {
+            border: 1px solid #333;
+            margin: 10px 0;
+            padding: 0;
+        }
+
+        .additional-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .additional-row:last-child {
+            border-bottom: none;
+        }
+
+        .additional-field {
+            padding: 8px;
+            border-right: 1px solid #333;
+        }
+
+        .additional-field:nth-child(3n) {
+            border-right: none;
+        }
+
+        .additional-field label {
+            font-weight: bold;
+            font-size: 11px;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .additional-field input {
+            width: 100%;
+            padding: 4px;
+            border: 1px solid #ccc;
+            font-size: 11px;
+            font-family: Arial;
+        }
+
+        .bank-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border: 1px solid #333;
+            margin: 10px 0;
+        }
+
+        .bank-header {
+            background-color: #a0522d;
+            color: white;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+
+        .bank-info {
+            padding: 10px;
+            border-right: 1px solid #333;
+            border-top: 1px solid #333;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .bank-info:last-child {
+            border-right: none;
+        }
+
+        .signature-section {
+            padding: 15px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 11px;
+            border-top: 1px solid #333;
+        }
+
+        .delete-row-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .delete-row-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .toolbar {
+                display: none;
+            }
+
+            .invoice {
+                border: 1px solid #333;
+                padding: 10px;
+            }
+        }
+
+        .note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-left: 4px solid #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <button class="print-btn" onclick="window.print()">🖨️ Print</button>
+            <button class="pdf-btn" onclick="generatePDF()">📄 Export as PDF</button>
+            <button onclick="resetForm()">🔄 Reset Form</button>
+        </div>
+
+        <div class="note">
+            ✓ All calculations are automatic | ✓ Fully offline | ✓ No data saved anywhere
+        </div>
+
+        <div class="invoice" id="invoiceContent">
+            <!-- Header -->
+            <div class="header">
+                <h1>HARI KRIPA TRADERS</h1>
+                <div class="subheader">AMARWARA DISTT. CHHINDWARA (M.P.) 480221</div>
+                <div class="business-type">GRAIN MERCHANT AND COMMISSION AGENT</div>
+                <div class="contact-info">
+                    Mandi Lic. No.-169 &nbsp;&nbsp;&nbsp; Mob.- 9424325462, 9098039862
+                </div>
+            </div>
+
+            <!-- Info Grid -->
+            <div class="info-grid">
+                <div class="info-box">
+                    <label>GSTIN No.-</label>
+                    <input type="text" value="23DEBPS3164F1ZO" readonly>
+                </div>
+                <div class="info-box">
+                    <label>Broker Name :-</label>
+                    <input type="text" id="brokerName" placeholder="">
+                </div>
+                <div class="info-box">
+                    <label>State - &nbsp; M.P. &nbsp;&nbsp; Code - 23</label>
+                    <input type="text" value="M.P. / 23" readonly style="background-color: #f9f9f9;">
+                </div>
+                <div class="info-box">
+                    <label>Transportation Mode :-</label>
+                    <input type="text" id="transportMode" placeholder="">
+                </div>
+                <div class="info-box">
+                    <label>Invoice S/N :-</label>
+                    <input type="text" id="invoiceNumber" placeholder="">
+                </div>
+                <div class="info-box">
+                    <label>Date of Supply :-</label>
+                    <input type="date" id="dateOfSupply">
+                </div>
+                <div class="info-box">
+                    <label>Invoice Date :- (DD/MM/YYYY)</label>
+                    <input type="date" id="invoiceDate">
+                </div>
+                <div class="info-box">
+                    <label>Place of Supply :-</label>
+                    <input type="text" id="placeOfSupply" placeholder="">
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <label></label>
+                    <input type="text" placeholder="">
+                </div>
+                <div class="info-box">
+                    <label>Driver Name :-</label>
+                    <input type="text" id="driverName" placeholder="">
+                </div>
+                <div class="info-box">
+                    <label></label>
+                    <input type="text" placeholder="">
+                </div>
+                <div class="info-box">
+                    <label>Mob.-</label>
+                    <input type="text" id="driverMob" placeholder="">
+                </div>
+            </div>
+
+            <!-- Receiver Section -->
+            <div class="section-header">Details Of Receiver (Billed to)</div>
+
+            <div class="receiver-section">
+                <div class="receiver-row">
+                    <div class="receiver-field">
+                        <label>Name :-</label>
+                        <input type="text" id="receiverName" placeholder="">
+                    </div>
+                    <div class="receiver-field">
+                        <label></label>
+                        <input type="text" placeholder="">
+                    </div>
+                </div>
+
+                <div class="receiver-row">
+                    <div class="receiver-field full">
+                        <label>Address :-</label>
+                        <input type="text" id="receiverAddress" placeholder="" style="height: 30px;">
+                    </div>
+                </div>
+
+                <div class="receiver-row">
+                    <div class="receiver-field">
+                        <label>State :-</label>
+                        <input type="text" id="receiverState" placeholder="">
+                    </div>
+                    <div class="receiver-field">
+                        <label>State Code :-</label>
+                        <input type="text" id="receiverStateCode" placeholder="">
+                    </div>
+                </div>
+
+                <div class="receiver-row">
+                    <div class="receiver-field full">
+                        <label>GSTIN No. :-</label>
+                        <input type="text" id="receiverGSTIN" placeholder="">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Line Items Table -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description of Goods</th>
+                        <th style="width: 80px;">HSN Code</th>
+                        <th style="width: 70px;">Bags</th>
+                        <th style="width: 70px;">Qty (kg)</th>
+                        <th style="width: 70px;">Rate</th>
+                        <th style="width: 120px;">Amount</th>
+                        <th style="width: 50px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="lineItemsTable">
+                    <tr class="line-item">
+                        <td><input type="text" class="description" placeholder=""></td>
+                        <td><input type="text" class="hsnCode" placeholder=""></td>
+                        <td><input type="number" class="bags" placeholder="0" value="0"></td>
+                        <td><input type="number" class="qty" placeholder="0" value="0" step="0.01"></td>
+                        <td><input type="number" class="rate" placeholder="0" value="0" step="0.01"></td>
+                        <td class="amount-input"><span class="amount">0.00</span></td>
+                        <td class="delete-cell"><button class="delete-row-btn" onclick="deleteRow(this)">Delete</button></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button class="add-row-btn" onclick="addLineItem()">+ Add Row</button>
+
+            <!-- In Words & Total -->
+            <div class="in-words-section">
+                <div class="in-words-field">
+                    <label>In Words :-</label>
+                    <input type="text" id="inWords" placeholder="Amount in words (auto-filled)" readonly>
+                </div>
+                <div class="total-field">
+                    <label>Total</label>
+                    <div class="total-amount" id="totalAmount">0.00</div>
+                </div>
+            </div>
+
+            <!-- Additional Details -->
+            <div class="additional-section">
+                <div class="additional-row">
+                    <div class="additional-field">
+                        <label>Truck No. -</label>
+                        <input type="text" id="truckNo" placeholder="">
+                    </div>
+                    <div class="additional-field">
+                        <label>Driver Lic No. -</label>
+                        <input type="text" id="driverLicNo" placeholder="">
+                    </div>
+                    <div class="additional-field">
+                        <label>Rate -</label>
+                        <input type="text" id="rate" placeholder="">
+                    </div>
+                </div>
+
+                <div class="additional-row">
+                    <div class="additional-field">
+                        <label>Bhada -</label>
+                        <input type="text" id="bhada" placeholder="">
+                    </div>
+                    <div class="additional-field">
+                        <label>Advance -</label>
+                        <input type="text" id="advance" placeholder="">
+                    </div>
+                    <div class="additional-field">
+                        <label>Bhada (Paid by Company) -</label>
+                        <input type="text" id="bhadaPaid" placeholder="">
+                    </div>
+                </div>
+
+                <div class="additional-row">
+                    <div class="additional-field">
+                        <label>From -</label>
+                        <input type="text" id="fromLocation" placeholder="">
+                    </div>
+                    <div class="additional-field">
+                        <label>To -</label>
+                        <input type="text" id="toLocation" placeholder="">
+                    </div>
+                    <div class="additional-field">
+                        <label>Transporter -</label>
+                        <input type="text" id="transporter" placeholder="">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bank Section -->
+            <div class="bank-section">
+                <div class="bank-header">BANK DETAILS</div>
+                <div class="bank-info">
+                    <strong>BANK- HDFC BANK, AMARWARA</strong><br>
+                    IFSC Code- HDFC0005686<br>
+                    A/c No.- 99999424325462
+                </div>
+                <div class="bank-info" style="text-align: right; border-right: none;">
+                    <strong>For- HARI KRIPA TRADERS</strong><br><br>
+                    Signature :-
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add line item event listeners
+        function attachLineItemListeners(row) {
+            const qtyInput = row.querySelector('.qty');
+            const rateInput = row.querySelector('.rate');
+            
+            qtyInput.addEventListener('input', calculateAmount);
+            rateInput.addEventListener('input', calculateAmount);
+        }
+
+        // Calculate amount for a row
+        function calculateAmount(e) {
+            const row = e.target.closest('.line-item');
+            const qty = parseFloat(row.querySelector('.qty').value) || 0;
+            const rate = parseFloat(row.querySelector('.rate').value) || 0;
+            const amount = (qty * rate).toFixed(2);
+            row.querySelector('.amount').textContent = amount;
+            
+            // Update total
+            updateTotal();
+        }
+
+        // Update total amount
+        function updateTotal() {
+            let total = 0;
+            document.querySelectorAll('.line-item .amount').forEach(cell => {
+                total += parseFloat(cell.textContent) || 0;
+            });
+            
+            document.getElementById('totalAmount').textContent = total.toFixed(2);
+            document.getElementById('inWords').value = convertToWords(total);
+        }
+
+        // Convert number to words (Indian numbering system)
+        function convertToWords(num) {
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+            const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+            if (num === 0) return 'Zero Rupees Only';
+
+            function convertLessThanThousand(n) {
+                let result = '';
+                if (n >= 100) {
+                    result += ones[Math.floor(n / 100)] + ' Hundred ';
+                    n %= 100;
+                }
+                if (n >= 20) {
+                    result += tens[Math.floor(n / 10)] + ' ';
+                    n %= 10;
+                }
+                if (n >= 10) {
+                    result += teens[n - 10] + ' ';
+                } else if (n > 0) {
+                    result += ones[n] + ' ';
+                }
+                return result;
+            }
+
+            let words = '';
+            let crores = Math.floor(num / 10000000);
+            let lakhs = Math.floor((num % 10000000) / 100000);
+            let thousands = Math.floor((num % 100000) / 1000);
+            let remainder = Math.floor(num % 1000);
+
+            if (crores > 0) {
+                words += convertLessThanThousand(crores).trim() + ' Crore ';
+            }
+            if (lakhs > 0) {
+                words += convertLessThanThousand(lakhs).trim() + ' Lakh ';
+            }
+            if (thousands > 0) {
+                words += convertLessThanThousand(thousands).trim() + ' Thousand ';
+            }
+            if (remainder > 0) {
+                words += convertLessThanThousand(remainder).trim();
+            }
+
+            return words.trim() + ' Rupees Only';
+        }
+
+        // Add line item row
+        function addLineItem() {
+            const table = document.getElementById('lineItemsTable');
+            const newRow = document.createElement('tr');
+            newRow.className = 'line-item';
+            newRow.innerHTML = `
+                <td><input type="text" class="description" placeholder=""></td>
+                <td><input type="text" class="hsnCode" placeholder=""></td>
+                <td><input type="number" class="bags" placeholder="0" value="0"></td>
+                <td><input type="number" class="qty" placeholder="0" value="0" step="0.01"></td>
+                <td><input type="number" class="rate" placeholder="0" value="0" step="0.01"></td>
+                <td class="amount-input"><span class="amount">0.00</span></td>
+                <td class="delete-cell"><button class="delete-row-btn" onclick="deleteRow(this)">Delete</button></td>
+            `;
+            table.appendChild(newRow);
+            attachLineItemListeners(newRow);
+        }
+
+        // Delete line item row
+        function deleteRow(btn) {
+            btn.closest('tr').remove();
+            updateTotal();
+        }
+
+        // Reset form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the entire form?')) {
+                document.getElementById('invoiceNumber').value = '';
+                document.getElementById('invoiceDate').value = '';
+                document.getElementById('dateOfSupply').value = '';
+                document.getElementById('brokerName').value = '';
+                document.getElementById('transportMode').value = '';
+                document.getElementById('placeOfSupply').value = '';
+                document.getElementById('driverName').value = '';
+                document.getElementById('driverMob').value = '';
+                document.getElementById('receiverName').value = '';
+                document.getElementById('receiverAddress').value = '';
+                document.getElementById('receiverState').value = '';
+                document.getElementById('receiverStateCode').value = '';
+                document.getElementById('receiverGSTIN').value = '';
+                document.getElementById('truckNo').value = '';
+                document.getElementById('driverLicNo').value = '';
+                document.getElementById('rate').value = '';
+                document.getElementById('bhada').value = '';
+                document.getElementById('advance').value = '';
+                document.getElementById('bhadaPaid').value = '';
+                document.getElementById('fromLocation').value = '';
+                document.getElementById('toLocation').value = '';
+                document.getElementById('transporter').value = '';
+
+                // Clear line items except first row
+                const table = document.getElementById('lineItemsTable');
+                while (table.rows.length > 1) {
+                    table.deleteRow(1);
+                }
+
+                // Clear first row
+                const firstRow = table.rows[0];
+                firstRow.querySelectorAll('input').forEach(input => input.value = input.type === 'number' ? '0' : '');
+                firstRow.querySelector('.amount').textContent = '0.00';
+
+                updateTotal();
+            }
+        }
+
+        // Generate PDF
+        function generatePDF() {
+            const element = document.getElementById('invoiceContent');
+            const invoiceNum = document.getElementById('invoiceNumber').value || 'Invoice';
+            
+            const opt = {
+                margin: 5,
+                filename: 'HariKripa_' + invoiceNum + '_' + new Date().getTime() + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, allowTaint: true, useCORS: true },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Attach listeners to initial row
+            document.querySelectorAll('.line-item').forEach(row => {
+                attachLineItemListeners(row);
+            });
+        });
+    </script>
+</body>
+</html>
